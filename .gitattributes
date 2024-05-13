@@ -1,0 +1,2 @@
+DigitalTwin/Build/DTC_Web.data filter=lfs diff=lfs merge=lfs -text
+DigitalTwin/Build/DTC_Web.wasm filter=lfs diff=lfs merge=lfs -text

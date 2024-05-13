@@ -1,0 +1,14 @@
+{
+"maxStamina":100,
+"staminaRecoverSpeed":20.0,
+"staminaConsumeSpeed":2.0,
+"staminaRunConsumeSpeed":4.0,
+"recoverStartDelay":1.0,
+"maxHeat":50,
+"heatIncreaseSpeed":10.0,
+"heatDecreaseSpeed":5.0,
+"heatDizzyTime":3.0,
+"heatDizzyEndValue":0.0,
+"heatDecreaseDelayTime":1.0,
+"hfmChasingInterval":5.0
+}

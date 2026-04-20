@@ -1,16 +1,27 @@
 name: Deploy to GitHub Pages
+
 on:
   push:
-    branches: [main] # 如果你的分支名是 main
+    branches: [main]
+  workflow_dispatch:
+
+# 这一段是核心：显式给 GITHUB_TOKEN 授权
+permissions:
+  contents: read
+  pages: write      # 必须：用于上传 Pages 产物
+  id-token: write   # 必须：用于 OIDC 验证，解决你那个报错
 
 jobs:
-  build-and-deploy:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          lfs: true # 关键：告诉 Actions 也要拉取 LFS 文件
+          lfs: true # 确保拉取 LFS 文件
 
       - name: Checkout LFS objects
         run: git lfs checkout
@@ -21,7 +32,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.' # 部署整个根目录
+          path: '.' # 部署根目录所有内容
 
       - name: Deploy to GitHub Pages
         id: deployment

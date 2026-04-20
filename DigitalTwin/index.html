@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity Web Player | DigitalTwinCity</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 20px; 
+            background: #1a1c23; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* Unity 容器适配 - 已修正为 1600 */
+        #unity-container { 
+            position: relative; 
+            width: 1600px; 
+            height: 900px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            border: 1px solid #333;
+        }
+        #unity-canvas { 
+            width: 1600px; 
+            height: 900px; 
+            background: #231f20; 
+        }
+
+        /* 工业控制台风格日志面板 - 已适配宽度 */
+        .dev-log-container {
+            width: 1550px; /* 略小于 1600 以对齐边距 */
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(30, 33, 40, 0.95);
+            border-left: 5px solid #00e5ff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            font-family: 'Cascadia Code', 'Consolas', 'Monaco', monospace;
+            color: #d1d5db;
+            font-size: 14px;
+            line-height: 1.7;
+            border-radius: 0 8px 8px 0;
+        }
+        .dev-log-header {
+            color: #00e5ff;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #3f4451;
+            padding-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            letter-spacing: 1px;
+        }
+        .dev-log-content {
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .dev-log-content b { color: #ffca28; font-weight: 600; } 
+        .dev-log-content i { color: #7f8c98; font-style: normal; } 
+        
+        .tag {
+            background: #00e5ff;
+            color: #1a1c23;
+            padding: 2px 10px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 900;
+            margin-right: 12px;
+            vertical-align: middle;
+            text-transform: uppercase;
+        }
+
+        /* 滚动条美化 */
+        .dev-log-content::-webkit-scrollbar { width: 8px; }
+        .dev-log-content::-webkit-scrollbar-track { background: #1e2128; }
+        .dev-log-content::-webkit-scrollbar-thumb { background: #3f4451; border-radius: 4px; }
+
+        #unity-loading-bar { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none; }
+        #unity-footer { width: 1600px; display: flex; justify-content: space-between; padding-top: 10px; color: #666; font-size: 12px; }
+        #unity-fullscreen-button { width: 38px; height: 38px; cursor: pointer; background: url('TemplateData/fullscreen-button.png') no-repeat center; }
+    </style>
+</head>
+<body>
+    <div id="unity-container">
+        <canvas id="unity-canvas" width="1600" height="900" tabindex="-1"></canvas>
+        <div id="unity-loading-bar">
+            <div id="unity-logo"></div>
+            <div id="unity-progress-bar-empty">
+                <div id="unity-progress-bar-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="unity-footer">
+        <div id="unity-build-title">Momos.Core | DigitalTwinCity v0.1.0</div>
+        <div id="unity-fullscreen-button"></div>
+    </div>
+
+    <div class="dev-log-container">
+        <div class="dev-log-header">
+            <span>> SYSTEM_DEVELOPMENT_LOG_TERMINAL</span>
+            <span style="font-size: 12px; opacity: 0.5;">STATUS: OPERATIONAL (1600x900)</span>
+        </div>
+        <div class="dev-log-content"><span class="tag">Prototype</span><b>// 原型</b>
+            0. 接入 <b>Mapbox</b> 数据
+            1. 运行时实例保存到本地：
+            菜单：<b>"Mapbox/MoExporter"</b>
+            <i>* 卫星图材质有概率挂不上贴图...</i>
+            <i>* 若还是丢失，Tile的Material名和Texture的名称是强关联的。</i>
+            2. 创建并渲染城市白膜
+            给(1)中创建的预制体挂载: <b>'TileArchiveCreaterMono'</b> 导出Json数据;
+            给渲染物体添加 <b>'TileArchiveInitRenderMono'</b> (初始化);
+            给渲染物体添加 <b>'TileArchiveInvokeRenderMono'</b> (渲染优化/URP Baked Lit);
+            3. 视锥体过滤
+            主摄挂载: <b>"CameraGroundProjector"</b>
+            4. 环境系统
+            平行光挂载: <b>"WorldEnvironmentSystem"</b> 实现昼夜循环
+
+            <span class="tag">Alpha</span><b>// Alpha: 可用</b>
+            0. 镜头漫游: <b>"EasyCamera"</b>
+            1. 中模/高模优化
+            勾选 <b>"Combine Meshes"</b> 以降低 Batch。
+            高模建议单独挂载 Unity LOD 组件，避免在 WebGL 下内存溢出。
+
+            <span class="tag">Feedback</span><b>// Alpha: 测试反馈</b>
+            - <b>Web 平台发布配置：</b>
+            Project Setting -> Player -> Web发布 -> <b>Compression Format: Disabled</b> (解决加载错误)
+            - <b>核爆高光修正：</b>
+            Global Volume -> Bloom -> <b>Clamp: 10</b>
+
+            <span class="tag">Beta</span><b>// Beta: Todo</b>
+            0. 接入天气 API
+            同步修改 fogColor 与 ambientSkyColor。
+            ...
+        </div>
+    </div>
+
+    <script>
+        // 脚本部分保持不变，确保 config 里的数据匹配你的 Build 文件夹即可
+        var canvas = document.querySelector("#unity-canvas");
+        var loadingBar = document.querySelector("#unity-loading-bar");
+        var progressBarFull = document.querySelector("#unity-progress-bar-full");
+
+        var buildUrl = "Build";
+        var loaderUrl = buildUrl + "/DTC_Web.loader.js";
+        var config = {
+            dataUrl: buildUrl + "/DTC_Web.data",
+            frameworkUrl: buildUrl + "/DTC_Web.framework.js",
+            codeUrl: buildUrl + "/DTC_Web.wasm",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "Momos",
+            productName: "DigitalTwinCity",
+            productVersion: "0.1.0",
+        };
+
+        loadingBar.style.display = "block";
+
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+            createUnityInstance(canvas, config, (progress) => {
+                progressBarFull.style.width = 100 * progress + "%";
+            }).then((unityInstance) => {
+                loadingBar.style.display = "none";
+                document.querySelector("#unity-fullscreen-button").onclick = () => {
+                    unityInstance.SetFullscreen(1);
+                };
+            }).catch((message) => {
+                alert(message);
+            });
+        };
+        document.body.appendChild(script);
+    </script>
+</body>
+</html>

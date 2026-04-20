@@ -1,0 +1,28 @@
+name: Deploy to GitHub Pages
+on:
+  push:
+    branches: [main] # 如果你的分支名是 main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true # 关键：告诉 Actions 也要拉取 LFS 文件
+
+      - name: Checkout LFS objects
+        run: git lfs checkout
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.' # 部署整个根目录
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
